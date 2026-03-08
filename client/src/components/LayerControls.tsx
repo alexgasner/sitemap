@@ -1,4 +1,4 @@
-import { Map as MapIcon, Sun, Wind, Droplets, Thermometer, Layers, Snowflake, Leaf, Sun as SunHot } from "lucide-react";
+import { Map as MapIcon, Sun, Wind, Droplets, Thermometer, Layers, Snowflake, Leaf, Sun as SunHot, BoxSelect } from "lucide-react";
 import { ViewMode, Season } from "@/pages/Home";
 import clsx from "clsx";
 
@@ -17,6 +17,7 @@ export default function LayerControls({ viewMode, season, onViewModeChange, onSe
     { id: "wind", label: "Wind", icon: <Wind className="w-4 h-4" /> },
     { id: "water", label: "Water", icon: <Droplets className="w-4 h-4" /> },
     { id: "heat", label: "Heat", icon: <Thermometer className="w-4 h-4" /> },
+    { id: "microzones", label: "Zones", icon: <BoxSelect className="w-4 h-4" /> },
     { id: "composite", label: "Composite", icon: <Layers className="w-4 h-4" /> },
   ];
 

@@ -4,7 +4,7 @@ import LeftPanel from "@/components/LeftPanel";
 import MapCanvas from "@/components/MapCanvas";
 import RightPanel from "@/components/RightPanel";
 
-export type ViewMode = "base" | "sun" | "wind" | "water" | "heat" | "composite";
+export type ViewMode = "base" | "sun" | "wind" | "water" | "heat" | "microzones" | "composite";
 export type Season = "winter" | "spring_fall" | "summer";
 
 export default function Home() {

@@ -81,24 +81,109 @@ export default function MapCanvas({
                 {/* Zone A: South Wall */}
                 <button 
                   className={clsx(
-                    "absolute top-[calc(50%+120px)] left-1/2 -translate-x-1/2 w-48 h-12 rounded-sm transition-all duration-200 cursor-pointer",
+                    "absolute top-[calc(50%+100px)] left-1/2 -translate-x-1/2 w-48 h-12 rounded-sm transition-all duration-200 cursor-pointer flex items-center justify-center",
                     selectedZone === "zone-a" 
-                      ? "bg-primary/20 border-2 border-primary" 
-                      : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
+                      ? "bg-orange-500/20 border-2 border-orange-500" 
+                      : viewMode === "microzones"
+                        ? "bg-orange-500/10 border-2 border-orange-500/30 hover:border-orange-500/60 hover:bg-orange-500/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
                   )}
                   onClick={() => onSelectZone("zone-a")}
-                />
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-a") && (
+                    <span className="text-[10px] font-medium text-orange-900 bg-orange-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-orange-200">Zone A</span>
+                  )}
+                </button>
                 
+                {/* Zone B: Exposed West Edge */}
+                <button 
+                  className={clsx(
+                    "absolute top-1/2 left-[15%] -translate-y-1/2 w-20 h-64 rounded-sm transition-all duration-200 cursor-pointer flex items-center justify-center",
+                    selectedZone === "zone-b" 
+                      ? "bg-yellow-500/20 border-2 border-yellow-500" 
+                      : viewMode === "microzones"
+                        ? "bg-yellow-500/10 border-2 border-yellow-500/30 hover:border-yellow-500/60 hover:bg-yellow-500/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
+                  )}
+                  onClick={() => onSelectZone("zone-b")}
+                  style={{ pointerEvents: viewMode === "microzones" || selectedZone === "zone-b" || viewMode === "base" ? 'auto' : 'none' }}
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-b") && (
+                    <span className="text-[10px] font-medium text-yellow-900 bg-yellow-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-yellow-200 -rotate-90">Zone B</span>
+                  )}
+                </button>
+
                 {/* Zone C: North Shade */}
                 <button 
                   className={clsx(
-                    "absolute top-[calc(50%-160px)] left-1/2 -translate-x-1/2 w-48 h-16 rounded-sm transition-all duration-200 cursor-pointer",
+                    "absolute top-[calc(50%-160px)] left-1/2 -translate-x-1/2 w-48 h-16 rounded-sm transition-all duration-200 cursor-pointer flex items-center justify-center",
                     selectedZone === "zone-c" 
-                      ? "bg-blue-500/20 border-2 border-blue-500/50" 
-                      : "bg-transparent border-2 border-transparent hover:border-blue-500/30 hover:bg-blue-500/5"
+                      ? "bg-blue-500/20 border-2 border-blue-500" 
+                      : viewMode === "microzones"
+                        ? "bg-blue-500/10 border-2 border-blue-500/30 hover:border-blue-500/60 hover:bg-blue-500/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
                   )}
                   onClick={() => onSelectZone("zone-c")}
-                />
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-c") && (
+                    <span className="text-[10px] font-medium text-blue-900 bg-blue-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-blue-200">Zone C</span>
+                  )}
+                </button>
+
+                {/* Zone D: Wet Rear Corner */}
+                <button 
+                  className={clsx(
+                    "absolute top-[10%] right-[15%] w-32 h-32 rounded-tl-full transition-all duration-200 cursor-pointer flex items-center justify-center",
+                    selectedZone === "zone-d" 
+                      ? "bg-teal-500/20 border-2 border-teal-500" 
+                      : viewMode === "microzones"
+                        ? "bg-teal-500/10 border-2 border-teal-500/30 hover:border-teal-500/60 hover:bg-teal-500/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
+                  )}
+                  onClick={() => onSelectZone("zone-d")}
+                  style={{ pointerEvents: viewMode === "microzones" || selectedZone === "zone-d" || viewMode === "base" ? 'auto' : 'none' }}
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-d") && (
+                    <span className="text-[10px] font-medium text-teal-900 bg-teal-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-teal-200">Zone D</span>
+                  )}
+                </button>
+
+                {/* Zone E: Open Sunny Bed */}
+                <button 
+                  className={clsx(
+                    "absolute bottom-[15%] right-[15%] w-48 h-32 rounded-br-3xl transition-all duration-200 cursor-pointer flex items-center justify-center",
+                    selectedZone === "zone-e" 
+                      ? "bg-amber-500/20 border-2 border-amber-500" 
+                      : viewMode === "microzones"
+                        ? "bg-amber-500/10 border-2 border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
+                  )}
+                  onClick={() => onSelectZone("zone-e")}
+                  style={{ pointerEvents: viewMode === "microzones" || selectedZone === "zone-e" || viewMode === "base" ? 'auto' : 'none' }}
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-e") && (
+                    <span className="text-[10px] font-medium text-amber-900 bg-amber-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-amber-200">Zone E</span>
+                  )}
+                </button>
+
+                {/* Zone F: Tree Root Competition */}
+                <button 
+                  className={clsx(
+                    "absolute top-1/4 right-1/4 w-32 h-32 rounded-full transition-all duration-200 cursor-pointer flex items-center justify-center",
+                    selectedZone === "zone-f" 
+                      ? "bg-emerald-600/20 border-2 border-emerald-600" 
+                      : viewMode === "microzones"
+                        ? "bg-emerald-600/10 border-2 border-emerald-600/30 hover:border-emerald-600/60 hover:bg-emerald-600/20"
+                        : "bg-transparent border-2 border-transparent hover:border-primary/30 hover:bg-primary/5"
+                  )}
+                  onClick={() => onSelectZone("zone-f")}
+                  style={{ pointerEvents: viewMode === "microzones" || selectedZone === "zone-f" || viewMode === "base" ? 'auto' : 'none' }}
+                >
+                  {(viewMode === "microzones" || selectedZone === "zone-f") && (
+                    <span className="text-[10px] font-medium text-emerald-900 bg-emerald-100/90 px-1.5 py-0.5 rounded backdrop-blur-md shadow-sm border border-emerald-200">Zone F</span>
+                  )}
+                </button>
+
               </div>
 
               {/* Compass / Scale */}
