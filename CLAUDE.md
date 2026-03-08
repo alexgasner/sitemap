@@ -245,6 +245,15 @@ If implementation reality conflicts with them, preserve the product intent and i
 
 ---
 
+## Replit Deployment
+
+- `package.json` lives in `replitdesign/`, **not** the repo root.
+- All commands in `.replit` must `cd replitdesign` first (e.g., `cd replitdesign && npm run dev`).
+- `[deployment]` array-format commands use `["sh", "-c", "cd replitdesign && ..."]` to support `&&`.
+- After any `.replit` change, verify locally with `cd replitdesign && npm run build`.
+
+---
+
 ## Important final rule
 
 The app’s core value is not raw geospatial display.

@@ -1,5 +1,5 @@
 modules = ["nodejs-20", "web", "postgresql-16"]
-run = "npm run dev"
+run = "cd replitdesign && npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
@@ -14,8 +14,8 @@ PORT = "5000"
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+build = ["sh", "-c", "cd replitdesign && npm run build"]
+run = ["sh", "-c", "cd replitdesign && npm run start"]
 
 [workflows]
 runButton = "Project"
@@ -35,7 +35,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "cd replitdesign && npm run dev"
 waitForPort = 5000
 
 [agent]
