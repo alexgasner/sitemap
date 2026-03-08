@@ -52,6 +52,7 @@ export default function Home() {
             />
 
             <MapCanvas
+              property={property}
               hasSearched={true}
               viewMode={viewMode}
               season={season}
