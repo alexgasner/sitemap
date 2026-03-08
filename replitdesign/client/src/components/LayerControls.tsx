@@ -1,5 +1,5 @@
 import { Map as MapIcon, Sun, Wind, Droplets, Thermometer, Layers, Snowflake, Leaf, Sun as SunHot, BoxSelect } from "lucide-react";
-import { ViewMode, Season } from "@/pages/Home";
+import type { ViewMode, Season } from "@shared/domain";
 import clsx from "clsx";
 
 interface LayerControlsProps {

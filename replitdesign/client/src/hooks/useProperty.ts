@@ -1,0 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchDemoProperty } from "@/lib/api";
+import type { Property } from "@shared/domain";
+
+/**
+ * Fetches the demo property from the API.
+ * Only fires when `enabled` is true (i.e., user clicked Demo or searched).
+ */
+export function useDemoProperty(enabled: boolean) {
+  return useQuery<Property>({
+    queryKey: ["properties", "demo"],
+    queryFn: fetchDemoProperty,
+    enabled,
+  });
+}

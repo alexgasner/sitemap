@@ -3,4 +3,5 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gzdocs/accesstokengithub.md
+*.tar.gz
+docs/accesstokengithub.md

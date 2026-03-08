@@ -1,38 +1,36 @@
 import { Button } from "@/components/ui/button";
 import { Download, Save, Settings, Search, Map as MapIcon, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "./ui/input";
 
 interface HeaderProps {
-  address: string;
   onSearch: (address: string) => void;
+  onDemo: () => void;
+  isLoading: boolean;
   hasSearched: boolean;
+  resolvedAddress?: string;
 }
 
-export default function Header({ address, onSearch, hasSearched }: HeaderProps) {
-  const [searchValue, setSearchValue] = useState(address);
-  const [isSearching, setIsSearching] = useState(false);
+export default function Header({ onSearch, onDemo, isLoading, hasSearched, resolvedAddress }: HeaderProps) {
+  const [searchValue, setSearchValue] = useState("");
+
+  // When address resolves, show it in the search field
+  useEffect(() => {
+    if (resolvedAddress) {
+      setSearchValue(resolvedAddress);
+    }
+  }, [resolvedAddress]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!searchValue.trim()) return;
-    
-    setIsSearching(true);
-    // Simulate resolving the address
-    setTimeout(() => {
-      onSearch(searchValue);
-      setIsSearching(false);
-    }, 1200);
+    if (!searchValue.trim() || isLoading) return;
+    onSearch(searchValue);
   };
 
   const handleDemo = () => {
-    setSearchValue("1428 Elm Street, Example City, EX 90210");
-    setIsSearching(true);
-    setTimeout(() => {
-      onSearch("1428 Elm Street, Example City, EX 90210");
-      setIsSearching(false);
-    }, 1200);
-  }
+    if (isLoading) return;
+    onDemo();
+  };
 
   return (
     <header className="flex-none h-16 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-6 z-20">
@@ -55,7 +53,7 @@ export default function Header({ address, onSearch, hasSearched }: HeaderProps) 
       <div className="w-1/3 flex justify-center max-w-md">
         <form onSubmit={handleSearch} className="relative w-full group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <Input 
+          <Input
             type="text"
             placeholder="Enter a property address"
             value={searchValue}
@@ -63,14 +61,14 @@ export default function Header({ address, onSearch, hasSearched }: HeaderProps) 
             className="w-full pl-9 pr-24 h-10 bg-muted/50 border-transparent hover:border-border focus-visible:border-primary/30 focus-visible:ring-primary/20 shadow-none text-sm transition-all rounded-full"
           />
           <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {isSearching ? (
+            {isLoading ? (
               <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mr-3" />
             ) : (
               !hasSearched && (
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                   className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground rounded-full"
                   onClick={handleDemo}
                 >

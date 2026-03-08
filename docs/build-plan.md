@@ -625,3 +625,50 @@ The first meaningful version is done when:
 - the codebase is clean enough to support future planting logic
 
 That is enough to move into the next phase.
+
+---
+
+## Session-by-Session Execution Plan
+
+The phases above are implemented across 10 discrete sessions. Each session ends with a deployable checkpoint.
+
+### Amendments to original phases
+1. Phases 1-2 compressed into Session 1 (audit is lightweight, domain model is well-specified)
+2. Phase 3 split across Sessions 2-4 (frontend wiring, map rendering, layer overlays)
+3. Phase 4 split into Sessions 5 (pipeline) + 6 (geocoding) + 8 (insights/confidence)
+4. Loading animation gets its own session (Session 7)
+5. `.replit` deployment config fixed in Session 1 (static → autoscale)
+
+### Decisions
+- **Geocoding:** Google Maps Geocoding API (Session 6)
+- **Geometry data:** Free only — OpenStreetMap + Microsoft Building Footprints (Session 9)
+- **Demo property:** "1428 Elm Street, Portland, OR 97201"
+
+### Session list
+1. **Foundation** — Domain types + first API endpoint + deployment fix ✅
+2. **Frontend API wiring** — React Query, replace inline mock data
+3. **Data-driven map** — SVG rendering from API geometry
+4. **Layer overlays** — Visual SVG overlays for each layer mode
+5. **Analysis pipeline** — Server-side composable analysis
+6. **Geocoding** — Real address search via Google Maps API
+7. **Loading animation** — Premium staged analysis progress
+8. **Insights + confidence** — Enrich UI with generated insights, confidence badges
+9. **Real geometry** — Parcel + building data from OSM/Microsoft
+10. **Polish + QA** — Edge cases, responsive, full walkthrough
+
+### Dependency graph
+```
+S1 → S2 → S3 → S4 → S5 → S6 ↔ S7 → S8 → S9 → S10
+```
+
+### Critical files
+| File | Role |
+|------|------|
+| `shared/domain.ts` | Canonical types — entire app depends on this |
+| `server/routes.ts` | API layer |
+| `server/mock-data/demo-property.ts` | Demo data seed |
+| `server/analysis/pipeline.ts` (Session 5) | Core analysis orchestrator |
+| `server/analysis/microzones.ts` (Session 5) | Heart of the product |
+| `client/src/components/MapCanvas.tsx` (Session 3) | Largest rewrite: CSS → SVG |
+| `client/src/pages/Home.tsx` | State management hub |
+| `.replit` | Deployment config |

@@ -1,16 +1,17 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import type { Server } from "http";
+import { demoProperty } from "./mock-data/demo-property";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // --- Property endpoints ---
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  // GET /api/properties/demo — returns the hardcoded demo property
+  app.get("/api/properties/demo", (_req, res) => {
+    res.json(demoProperty);
+  });
 
   return httpServer;
 }

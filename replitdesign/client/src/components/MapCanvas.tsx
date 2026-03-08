@@ -1,7 +1,7 @@
-import { useState } from "react";
 import LayerControls from "./LayerControls";
 import EmptyState from "./EmptyState";
-import { ViewMode, Season } from "@/pages/Home";
+import type { ViewMode, Season } from "@shared/domain";
+import { Loader2 } from "lucide-react";
 import clsx from "clsx";
 
 interface MapCanvasProps {
@@ -12,16 +12,20 @@ interface MapCanvasProps {
   onSeasonChange: (season: Season) => void;
   selectedZone: string | null;
   onSelectZone: (zoneId: string) => void;
+  isLoading?: boolean;
+  error?: string;
 }
 
-export default function MapCanvas({ 
-  hasSearched, 
-  viewMode, 
-  season, 
-  onViewModeChange, 
+export default function MapCanvas({
+  hasSearched,
+  viewMode,
+  season,
+  onViewModeChange,
   onSeasonChange,
   selectedZone,
-  onSelectZone
+  onSelectZone,
+  isLoading,
+  error,
 }: MapCanvasProps) {
 
   return (
@@ -29,7 +33,16 @@ export default function MapCanvas({
       
       {/* Map Content Area */}
       <div className="w-full h-full relative p-8">
-        {!hasSearched ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-500">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+            <p className="text-sm text-muted-foreground">Analyzing property...</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full animate-in fade-in duration-500">
+            <p className="text-sm text-destructive">{error}</p>
+          </div>
+        ) : !hasSearched ? (
           <EmptyState />
         ) : (
           <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-700">
