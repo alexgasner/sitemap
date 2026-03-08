@@ -32,7 +32,10 @@ export default function LeftPanel({ address, selectedZone, onSelectZone }: LeftP
               <h3 className="font-medium text-sm text-foreground truncate" title={address}>
                 {address.split(',')[0]}
               </h3>
-              <p className="text-xs text-muted-foreground mt-1">~0.15 acres • 35% building coverage</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-muted-foreground">~0.15 acres • 35% building coverage</p>
+                <Badge variant="outline" className="text-[10px] font-medium bg-background/50 text-foreground/80">Zone 9b</Badge>
+              </div>
               
               <ul className="mt-3 space-y-1.5 text-xs text-foreground/80 leading-relaxed">
                 <li className="flex items-start gap-2">
