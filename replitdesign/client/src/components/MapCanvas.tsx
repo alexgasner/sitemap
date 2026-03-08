@@ -5,6 +5,7 @@ import BuildingLayer from "./map/BuildingLayer";
 import SiteFeatureLayer from "./map/SiteFeatureLayer";
 import EnvironmentalOverlay from "./map/EnvironmentalOverlay";
 import MicrozoneLayer from "./map/MicrozoneLayer";
+import MapLegend from "./map/MapLegend";
 import { computeViewBox } from "@/lib/map/renderer";
 import type { Property, ViewMode, Season } from "@shared/domain";
 import { Loader2 } from "lucide-react";
@@ -56,7 +57,8 @@ export default function MapCanvas({
         ) : !hasSearched || !property ? (
           <EmptyState />
         ) : (
-          <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-700">
+          <div className="w-full h-full flex items-center justify-center animate-in fade-in duration-700 relative">
+            <MapLegend viewMode={viewMode} />
             <svg
               viewBox={`${vb.minX} ${vb.minY} ${vb.width} ${vb.height}`}
               className="w-full h-full max-w-[700px] max-h-full"

@@ -257,7 +257,7 @@ export const demoProperty: Property = {
       methodology: "Moisture tendency from roof runoff, building proximity, and assumed low-point drainage",
       confidence: "modeled",
     },
-    // Heat exposure
+    // Heat exposure — summer
     {
       id: "layer-heat-summer",
       type: "heat_exposure",
@@ -290,6 +290,340 @@ export const demoProperty: Property = {
       ],
       sourceInputs: ["building_footprint", "impervious_surfaces", "compass_orientation"],
       methodology: "Heat from wall reflection, hardscape re-radiation, and solar gain on south-facing surfaces",
+      confidence: "modeled",
+    },
+
+    // ---- Winter layers ----
+    {
+      id: "layer-solar-winter",
+      type: "solar_exposure",
+      season: "winter",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 650 },
+              { x: 650, y: 650 },
+              { x: 950, y: 850 },
+              { x: 950, y: 950 },
+              { x: 250, y: 950 },
+            ],
+          },
+          intensity: 0.55,
+          label: "Low-angle winter sun — south yard only",
+        },
+      ],
+      sourceInputs: ["building_footprint", "compass_orientation"],
+      methodology: "Low winter sun angle casts longer building shadows; only far south yard receives direct light",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-shade-winter",
+      type: "shade",
+      season: "winter",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 150, y: 50 },
+              { x: 700, y: 50 },
+              { x: 700, y: 350 },
+              { x: 150, y: 350 },
+            ],
+          },
+          intensity: 0.9,
+          label: "Extended building shadow — winter",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 350 },
+              { x: 650, y: 350 },
+              { x: 650, y: 550 },
+              { x: 250, y: 550 },
+            ],
+          },
+          intensity: 0.5,
+          label: "Partial shade from low sun angle",
+        },
+      ],
+      sourceInputs: ["building_footprint", "canopy_outline"],
+      methodology: "Extended shadow projection from low winter sun angle",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-wind-winter",
+      type: "wind_exposure",
+      season: "winter",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 50, y: 50 },
+              { x: 250, y: 50 },
+              { x: 250, y: 250 },
+              { x: 50, y: 250 },
+            ],
+          },
+          intensity: 0.35,
+          label: "Sheltered — fence + building lee",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 650, y: 550 },
+              { x: 950, y: 550 },
+              { x: 950, y: 950 },
+              { x: 650, y: 950 },
+            ],
+          },
+          intensity: 0.95,
+          label: "Very exposed — winter storms from SW",
+        },
+      ],
+      sourceInputs: ["building_footprint", "fence_lines", "parcel_edges"],
+      methodology: "Winter wind exposure heightened; prevailing storms from southwest",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-moisture-winter",
+      type: "moisture_tendency",
+      season: "winter",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 700, y: 700 },
+              { x: 950, y: 700 },
+              { x: 950, y: 950 },
+              { x: 700, y: 950 },
+            ],
+          },
+          intensity: 0.95,
+          label: "Waterlogged — winter drainage pooling",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 550 },
+              { x: 400, y: 550 },
+              { x: 400, y: 750 },
+              { x: 250, y: 750 },
+            ],
+          },
+          intensity: 0.15,
+          label: "Dry — rain shadow from building overhang",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 50, y: 550 },
+              { x: 250, y: 550 },
+              { x: 250, y: 950 },
+              { x: 50, y: 950 },
+            ],
+          },
+          intensity: 0.6,
+          label: "Moderate moisture — driveway runoff",
+        },
+      ],
+      sourceInputs: ["building_footprint", "parcel_geometry", "roof_edges"],
+      methodology: "Winter increases overall moisture; low-point pooling intensifies",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-heat-winter",
+      type: "heat_exposure",
+      season: "winter",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 550 },
+              { x: 650, y: 550 },
+              { x: 650, y: 650 },
+              { x: 250, y: 650 },
+            ],
+          },
+          intensity: 0.4,
+          label: "Mild warmth — south wall residual heat",
+        },
+      ],
+      sourceInputs: ["building_footprint", "compass_orientation"],
+      methodology: "Reduced solar gain in winter; south wall retains some thermal advantage",
+      confidence: "modeled",
+    },
+
+    // ---- Spring/Fall layers ----
+    {
+      id: "layer-solar-spring",
+      type: "solar_exposure",
+      season: "spring_fall",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 550 },
+              { x: 650, y: 550 },
+              { x: 950, y: 700 },
+              { x: 950, y: 950 },
+              { x: 250, y: 950 },
+            ],
+          },
+          intensity: 0.75,
+          label: "Good sun — south yard",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 650, y: 400 },
+              { x: 950, y: 400 },
+              { x: 950, y: 700 },
+              { x: 650, y: 550 },
+            ],
+          },
+          intensity: 0.55,
+          label: "Moderate sun — east side",
+        },
+      ],
+      sourceInputs: ["building_footprint", "compass_orientation"],
+      methodology: "Moderate sun angle; building shadow intermediate between summer and winter",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-shade-spring",
+      type: "shade",
+      season: "spring_fall",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 200, y: 80 },
+              { x: 680, y: 80 },
+              { x: 680, y: 280 },
+              { x: 200, y: 280 },
+            ],
+          },
+          intensity: 0.7,
+          label: "Building shadow — moderate length",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 690, y: 150 },
+              { x: 900, y: 150 },
+              { x: 900, y: 400 },
+              { x: 690, y: 400 },
+            ],
+          },
+          intensity: 0.5,
+          label: "Tree canopy — partial leaf cover",
+        },
+      ],
+      sourceInputs: ["building_footprint", "canopy_outline"],
+      methodology: "Intermediate shadow length; deciduous canopy partially leafed",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-wind-spring",
+      type: "wind_exposure",
+      season: "spring_fall",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 50, y: 50 },
+              { x: 250, y: 50 },
+              { x: 250, y: 250 },
+              { x: 50, y: 250 },
+            ],
+          },
+          intensity: 0.4,
+          label: "Sheltered — fence + building lee",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 650, y: 550 },
+              { x: 950, y: 550 },
+              { x: 950, y: 950 },
+              { x: 650, y: 950 },
+            ],
+          },
+          intensity: 0.75,
+          label: "Exposed — open south-east",
+        },
+      ],
+      sourceInputs: ["building_footprint", "fence_lines", "parcel_edges"],
+      methodology: "Moderate seasonal winds; patterns similar to summer but less intense",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-moisture-spring",
+      type: "moisture_tendency",
+      season: "spring_fall",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 750, y: 750 },
+              { x: 950, y: 750 },
+              { x: 950, y: 950 },
+              { x: 750, y: 950 },
+            ],
+          },
+          intensity: 0.75,
+          label: "Wet — spring rains collect here",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 550 },
+              { x: 350, y: 550 },
+              { x: 350, y: 700 },
+              { x: 250, y: 700 },
+            ],
+          },
+          intensity: 0.2,
+          label: "Dry strip — roof overhang",
+        },
+      ],
+      sourceInputs: ["building_footprint", "parcel_geometry", "roof_edges"],
+      methodology: "Spring/fall rainfall moderate; drainage patterns similar to summer",
+      confidence: "modeled",
+    },
+    {
+      id: "layer-heat-spring",
+      type: "heat_exposure",
+      season: "spring_fall",
+      zones: [
+        {
+          geometry: {
+            points: [
+              { x: 250, y: 550 },
+              { x: 650, y: 550 },
+              { x: 650, y: 700 },
+              { x: 250, y: 700 },
+            ],
+          },
+          intensity: 0.6,
+          label: "Moderate warmth — south wall",
+        },
+        {
+          geometry: {
+            points: [
+              { x: 100, y: 550 },
+              { x: 250, y: 550 },
+              { x: 250, y: 950 },
+              { x: 100, y: 950 },
+            ],
+          },
+          intensity: 0.45,
+          label: "Mild heat — driveway",
+        },
+      ],
+      sourceInputs: ["building_footprint", "impervious_surfaces", "compass_orientation"],
+      methodology: "Moderate solar gain; wall and hardscape effects less pronounced than summer",
       confidence: "modeled",
     },
   ],

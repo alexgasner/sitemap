@@ -52,8 +52,19 @@ export const LAYER_COLORS: Record<string, { low: string; high: string }> = {
 export function getLayerFill(layerType: string, intensity: number): string {
   const palette = LAYER_COLORS[layerType];
   if (!palette) return `rgba(128, 128, 128, ${intensity * 0.2})`;
-  // Simple lerp between low and high based on intensity
-  return intensity > 0.5 ? palette.high : palette.low;
+  // Parse rgba values and interpolate
+  const parse = (s: string) => {
+    const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+    return m ? { r: +m[1], g: +m[2], b: +m[3], a: +m[4] } : { r: 128, g: 128, b: 128, a: 0.1 };
+  };
+  const lo = parse(palette.low);
+  const hi = parse(palette.high);
+  const t = Math.max(0, Math.min(1, intensity));
+  const r = Math.round(lo.r + (hi.r - lo.r) * t);
+  const g = Math.round(lo.g + (hi.g - lo.g) * t);
+  const b = Math.round(lo.b + (hi.b - lo.b) * t);
+  const a = +(lo.a + (hi.a - lo.a) * t).toFixed(3);
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
 /** Map ViewMode to the layer types it should display */
