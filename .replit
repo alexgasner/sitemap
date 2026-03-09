@@ -14,7 +14,7 @@ PORT = "5000"
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["sh", "-c", "cd replitdesign && npm run build"]
+build = ["sh", "-c", "cd replitdesign && npm install && npm run build"]
 run = ["sh", "-c", "cd replitdesign && npm run start"]
 
 [workflows]
