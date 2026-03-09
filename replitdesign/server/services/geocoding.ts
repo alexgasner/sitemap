@@ -1,7 +1,7 @@
 /**
  * Geocoding service — resolves a street address to coordinates.
- * Uses Google Maps Geocoding API when GOOGLE_MAPS_API_KEY is set.
- * Falls through gracefully when no key is configured.
+ * Uses Google Maps Geocoding API when GOOGLE_MAPS_API_KEY is set,
+ * otherwise falls back to OpenStreetMap Nominatim (free, no key required).
  */
 
 export interface GeocodingResult {
@@ -10,12 +10,56 @@ export interface GeocodingResult {
   lon: number;
 }
 
+/** Rate-limit guard for Nominatim (max 1 req/sec per TOS) */
+let lastNominatimCall = 0;
+
+async function geocodeWithNominatim(address: string): Promise<GeocodingResult> {
+  // Enforce 1 req/sec rate limit
+  const now = Date.now();
+  const elapsed = now - lastNominatimCall;
+  if (elapsed < 1000) {
+    await new Promise((resolve) => setTimeout(resolve, 1000 - elapsed));
+  }
+  lastNominatimCall = Date.now();
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("q", address);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("addressdetails", "1");
+
+  const res = await fetch(url.toString(), {
+    headers: { "User-Agent": "SitemapApp/1.0" },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Nominatim request failed: ${res.status} ${res.statusText}`);
+  }
+
+  const data = (await res.json()) as Array<{
+    display_name: string;
+    lat: string;
+    lon: string;
+  }>;
+
+  if (!data.length) {
+    throw new Error("Address not found. Please check the address and try again.");
+  }
+
+  const result = data[0];
+  return {
+    resolvedAddress: result.display_name,
+    lat: parseFloat(result.lat),
+    lon: parseFloat(result.lon),
+  };
+}
+
 export async function geocodeAddress(address: string): Promise<GeocodingResult> {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
-  // No API key — passthrough mode
+  // No Google API key — use Nominatim (free OSM geocoder)
   if (!apiKey) {
-    return { resolvedAddress: address, lat: 0, lon: 0 };
+    return geocodeWithNominatim(address);
   }
 
   const url = new URL("https://maps.googleapis.com/maps/api/geocode/json");
