@@ -26,10 +26,11 @@ export default function Home() {
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
-  // Unified property: prefer analyze result over demo
-  const property = analyzeMutation.data ?? demoData ?? undefined;
-  const isLoading = isDemoLoading || analyzeMutation.isPending;
-  const error = analyzeMutation.error ?? demoError ?? undefined;
+  // Unified property: if user has searched, only show mutation result (never fall through to demo)
+  const hasSearchAttempt = analyzeMutation.data !== undefined || analyzeMutation.isPending || !!analyzeMutation.error;
+  const property = hasSearchAttempt ? analyzeMutation.data : demoRequested ? demoData : undefined;
+  const isLoading = (demoRequested && isDemoLoading) || analyzeMutation.isPending;
+  const error = hasSearchAttempt ? analyzeMutation.error : demoRequested ? demoError : undefined;
   const hasSearched = !!property;
 
   // Error toasts

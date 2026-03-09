@@ -105,11 +105,13 @@ export async function registerRoutes(
 
     try {
       const geo = await geocodeAddress(address.trim());
+      console.log(`[analyze] Geocoded "${address.trim()}" → lat=${geo.lat}, lon=${geo.lon}, resolved="${geo.resolvedAddress}"`);
 
       let input: AnalysisInput;
 
       if (geo.lat !== 0 && geo.lon !== 0) {
         const geometry = await fetchPropertyGeometry(geo.lat, geo.lon);
+        console.log(`[analyze] Geometry lookup: ${geometry ? `found (${geometry.geometrySource}, ${geometry.sourceNotes.join('; ')})` : 'not found, using demo fallback'}`);
         if (geometry) {
           input = {
             address: address.trim(),
@@ -143,6 +145,7 @@ export async function registerRoutes(
       }
 
       const result = analyzeProperty(input);
+      console.log(`[analyze] Pipeline complete: geometrySource=${input.geometrySource}, ${result.microzones.length} microzones, ${result.insights.length} insights`);
       res.json(result);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Geocoding failed";

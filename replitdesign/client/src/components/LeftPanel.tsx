@@ -66,6 +66,14 @@ export default function LeftPanel({ property, selectedZone, onSelectZone }: Left
                   </li>
                 ))}
               </ul>
+
+              {property.analysisMetadata.dataSourceNotes.length > 0 && (
+                <div className="mt-3 pt-2 border-t border-border/30">
+                  <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
+                    {property.analysisMetadata.dataSourceNotes[0]}
+                  </p>
+                </div>
+              )}
             </div>
           </section>
 

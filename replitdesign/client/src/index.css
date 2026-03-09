@@ -133,11 +133,20 @@
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
-/* Map canvas grid texture */
+/* Map canvas background — tiles provide geographic context */
 .map-canvas-bg {
   background-color: hsl(var(--background));
-  background-image: 
-    linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
-  background-size: 40px 40px;
+}
+
+/* Leaflet zone label tooltip — minimal, no arrow */
+.leaflet-zone-label {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+}
+.leaflet-zone-label::before {
+  display: none !important;
 }
