@@ -72,7 +72,7 @@ async function queryOverpass(lat: number, lon: number): Promise<OverpassResponse
   }
   lastRequestTime = Date.now();
 
-  const query = `[out:json][timeout:15];(way["building"](around:150,${lat},${lon});way["landuse"="residential"](around:150,${lat},${lon});node["natural"="tree"](around:100,${lat},${lon}););out body;>;out skel qt;`;
+  const query = `[out:json][timeout:15];(way["building"](around:150,${lat},${lon});way["landuse"="residential"](around:150,${lat},${lon});way["boundary"="lot"](around:150,${lat},${lon});way["boundary"="cadastral"](around:150,${lat},${lon});way["leisure"="garden"](around:80,${lat},${lon});way["landuse"](around:150,${lat},${lon});node["natural"="tree"](around:100,${lat},${lon}););out body;>;out skel qt;`;
 
   const url = "https://overpass-api.de/api/interpreter";
   const res = await fetch(url, {
@@ -164,6 +164,7 @@ export async function fetchPropertyGeometry(
     kind: 'building' | 'parcel';
     points: Point[];
     center: Point;
+    priority?: number; // lower = better source for parcels
   }
 
   const buildings: ClassifiedPolygon[] = [];
@@ -189,8 +190,16 @@ export async function fetchPropertyGeometry(
 
       if (el.tags.building) {
         buildings.push({ kind: 'building', points: coords, center });
+      } else if (el.tags.boundary === 'lot') {
+        parcels.push({ kind: 'parcel', points: coords, center, priority: 1 });
+      } else if (el.tags.boundary === 'cadastral') {
+        parcels.push({ kind: 'parcel', points: coords, center, priority: 2 });
       } else if (el.tags.landuse === 'residential') {
-        parcels.push({ kind: 'parcel', points: coords, center });
+        parcels.push({ kind: 'parcel', points: coords, center, priority: 3 });
+      } else if (el.tags.leisure === 'garden') {
+        parcels.push({ kind: 'parcel', points: coords, center, priority: 4 });
+      } else if (el.tags.landuse) {
+        parcels.push({ kind: 'parcel', points: coords, center, priority: 5 });
       }
     }
 
@@ -218,23 +227,34 @@ export async function fetchPropertyGeometry(
   let geoSource: 'osm' | 'osm_partial';
 
   if (parcels.length > 0) {
-    // Pick parcel that contains/is closest to the main building
-    parcels.sort((a, b) => distance(a.center, mainBuilding.center) - distance(b.center, mainBuilding.center));
+    // Pick best parcel by priority (lower = better), then by distance to building
+    parcels.sort((a, b) => {
+      const pa = a.priority ?? 99;
+      const pb = b.priority ?? 99;
+      if (pa !== pb) return pa - pb;
+      return distance(a.center, mainBuilding.center) - distance(b.center, mainBuilding.center);
+    });
     parcelPoints = parcels[0].points;
     geoSource = 'osm';
     sourceNotes.push("Parcel boundary from OpenStreetMap");
   } else {
-    // Synthesize parcel from building bounding box × 2.5
-    const bbox = boundingBox(mainBuilding.points);
-    const bw = bbox.maxX - bbox.minX;
-    const bh = bbox.maxY - bbox.minY;
-    const expandX = Math.min(bw * 1.25, 40); // cap at 40m expansion each side
-    const expandY = Math.min(bh * 1.25, 50);
+    // Synthesize parcel from bounding box of main building + nearby neighbors
+    const nearbyThreshold = 30; // meters
+    const lotBuildings = [mainBuilding, ...neighborBuildings.filter(
+      (b) => distance(b.center, mainBuilding.center) < nearbyThreshold
+    )];
+    const allBuildingPoints = lotBuildings.flatMap((b) => b.points);
+    const bbox = boundingBox(allBuildingPoints);
+
+    // Asymmetric expansion: less in front (south/+Y), more behind (north/-Y)
+    const expandSide = Math.min((bbox.maxX - bbox.minX) * 0.6, 12);  // max 12m side
+    const expandFront = Math.min((bbox.maxY - bbox.minY) * 0.4, 8);  // max 8m front setback
+    const expandBack = Math.min((bbox.maxY - bbox.minY) * 0.8, 15);  // max 15m backyard
     parcelPoints = [
-      { x: bbox.minX - expandX, y: bbox.minY - expandY },
-      { x: bbox.maxX + expandX, y: bbox.minY - expandY },
-      { x: bbox.maxX + expandX, y: bbox.maxY + expandY },
-      { x: bbox.minX - expandX, y: bbox.maxY + expandY },
+      { x: bbox.minX - expandSide, y: bbox.minY - expandBack },
+      { x: bbox.maxX + expandSide, y: bbox.minY - expandBack },
+      { x: bbox.maxX + expandSide, y: bbox.maxY + expandFront },
+      { x: bbox.minX - expandSide, y: bbox.maxY + expandFront },
     ];
     geoSource = 'osm_partial';
     sourceNotes.push("Parcel boundary synthesized (not in OSM); building footprint from OSM");

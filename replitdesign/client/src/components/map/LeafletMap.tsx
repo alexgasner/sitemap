@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Polygon as LPolygon, Tooltip, useMap } from "r
 import type { LatLngBoundsExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Property, ViewMode, Season, GeoPoint } from "@shared/domain";
-import { polygonToLatLngs } from "@/lib/map/coordinates";
+import { polygonToLatLngs, ensureCounterClockwise, ensureClockwise } from "@/lib/map/coordinates";
 import { polygonCentroid } from "@/lib/map/renderer";
 import { localToLatLon } from "@/lib/map/coordinates";
 import {
@@ -36,7 +36,7 @@ function FitBounds({ property }: { property: Property }) {
   useEffect(() => {
     const latlngs = polygonToLatLngs(property.parcelGeometry, property.centroid);
     if (latlngs.length > 0) {
-      map.fitBounds(latlngs as LatLngBoundsExpression, { padding: [40, 40] });
+      map.fitBounds(latlngs as LatLngBoundsExpression, { padding: [30, 30], maxZoom: 20 });
     }
   }, [map, property.parcelGeometry, property.centroid]);
   return null;
@@ -66,6 +66,7 @@ export default function LeafletMap({
   );
   const buildings = property.siteFeatures.filter((f) => f.type === "building");
   const neighbors = property.siteFeatures.filter((f) => f.type === "neighboring_building");
+  const isSynthesizedParcel = property.geometrySource === 'osm_partial' || property.geometrySource === 'demo_fallback' || !property.geometrySource;
 
   return (
     <MapContainer
@@ -78,22 +79,43 @@ export default function LeafletMap({
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         subdomains="abcd"
-        maxZoom={20}
+        maxZoom={22}
       />
       <FitBounds property={property} />
 
-      {/* 1. Parcel outline */}
+      {/* 1. Open space (parcel with building cutouts) */}
       <LPolygon
-        positions={polygonToLatLngs(property.parcelGeometry, origin)}
+        positions={[
+          ensureCounterClockwise(polygonToLatLngs(property.parcelGeometry, origin)),
+          ...buildings.map(b => ensureClockwise(polygonToLatLngs(b.geometry, origin))),
+        ]}
         pathOptions={{
-          color: "#9ca3af",
-          weight: 2,
-          dashArray: "8 4",
-          fill: false,
+          fillColor: "#E8F5E9",
+          fillOpacity: 0.15,
+          color: "transparent",
+          weight: 0,
+          interactive: false,
         }}
       />
 
-      {/* 2. Site features */}
+      {/* 2. Parcel outline */}
+      <LPolygon
+        positions={polygonToLatLngs(property.parcelGeometry, origin)}
+        pathOptions={{
+          color: isSynthesizedParcel ? "#b0b8c4" : "#9ca3af",
+          weight: isSynthesizedParcel ? 1.5 : 2,
+          dashArray: isSynthesizedParcel ? "6 4" : "8 4",
+          fill: false,
+        }}
+      >
+        {isSynthesizedParcel && (
+          <Tooltip sticky className="leaflet-parcel-tooltip">
+            <span className="text-[11px] text-gray-500">Estimated lot boundary</span>
+          </Tooltip>
+        )}
+      </LPolygon>
+
+      {/* 3. Site features */}
       {siteFeatures.map((feat) => {
         const style = FEATURE_STYLES[feat.type] ?? { fill: "#F5F5F0", stroke: "#D0D0C8", weight: 1 };
         return (
@@ -111,7 +133,7 @@ export default function LeafletMap({
         );
       })}
 
-      {/* 3. Buildings */}
+      {/* 4. Buildings */}
       {buildings.map((b) => (
         <LPolygon
           key={b.id}
@@ -138,7 +160,7 @@ export default function LeafletMap({
         />
       ))}
 
-      {/* 4. Environmental overlays */}
+      {/* 5. Environmental overlays */}
       {activeLayers.map((layer) =>
         layer.zones.map((zone, i) => {
           const intensity = isComposite ? zone.intensity * 0.6 : zone.intensity;
@@ -159,7 +181,7 @@ export default function LeafletMap({
         }),
       )}
 
-      {/* 5. Microzones */}
+      {/* 6. Microzones */}
       {property.microzones.map((zone, index) => {
         const isSelected = selectedZone === zone.id;
         const isHovered = hoveredZone === zone.id && !isSelected;

@@ -228,6 +228,7 @@ export interface Property {
   resolvedAddress: string;
   centroid: GeoPoint;
   parcelGeometry: Polygon;
+  geometrySource?: 'osm' | 'osm_partial' | 'demo_fallback';
   siteFeatures: SiteFeature[];
   environmentalLayers: EnvironmentalLayer[];
   microzones: Microzone[];

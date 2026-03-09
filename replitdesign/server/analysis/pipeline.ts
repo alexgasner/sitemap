@@ -70,6 +70,7 @@ export function analyzeProperty(input: AnalysisInput): Property {
     resolvedAddress: input.resolvedAddress ?? input.address,
     centroid: input.centroid,
     parcelGeometry: input.parcelGeometry,
+    geometrySource: input.geometrySource,
     siteFeatures,
     environmentalLayers,
     microzones,
