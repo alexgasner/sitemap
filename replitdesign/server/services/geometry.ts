@@ -72,7 +72,7 @@ async function queryOverpass(lat: number, lon: number): Promise<OverpassResponse
   }
   lastRequestTime = Date.now();
 
-  const query = `[out:json][timeout:15];(way["building"](around:150,${lat},${lon});way["landuse"="residential"](around:150,${lat},${lon});way["boundary"="lot"](around:150,${lat},${lon});way["boundary"="cadastral"](around:150,${lat},${lon});way["leisure"="garden"](around:80,${lat},${lon});way["landuse"](around:150,${lat},${lon});node["natural"="tree"](around:100,${lat},${lon}););out body;>;out skel qt;`;
+  const query = `[out:json][timeout:15];(way["building"](around:150,${lat},${lon});way["landuse"="residential"](around:150,${lat},${lon});way["boundary"="lot"](around:150,${lat},${lon});way["boundary"="cadastral"](around:150,${lat},${lon});way["leisure"="garden"](around:80,${lat},${lon});node["natural"="tree"](around:100,${lat},${lon}););out body;>;out skel qt;`;
 
   const url = "https://overpass-api.de/api/interpreter";
   const res = await fetch(url, {
@@ -198,9 +198,7 @@ export async function fetchPropertyGeometry(
         parcels.push({ kind: 'parcel', points: coords, center, priority: 3 });
       } else if (el.tags.leisure === 'garden') {
         parcels.push({ kind: 'parcel', points: coords, center, priority: 4 });
-      } else if (el.tags.landuse) {
-        parcels.push({ kind: 'parcel', points: coords, center, priority: 5 });
-      }
+        }
     }
 
     // Trees
@@ -223,21 +221,34 @@ export async function fetchPropertyGeometry(
   const sourceNotes: string[] = [];
 
   // Parcel: use OSM parcel if found, otherwise synthesize
-  let parcelPoints: Point[];
-  let geoSource: 'osm' | 'osm_partial';
+  let parcelPoints: Point[] | null = null;
+  let geoSource: 'osm' | 'osm_partial' = 'osm_partial';
 
+  // Filter parcels: reject those too large or too far from the building
   if (parcels.length > 0) {
-    // Pick best parcel by priority (lower = better), then by distance to building
     parcels.sort((a, b) => {
       const pa = a.priority ?? 99;
       const pb = b.priority ?? 99;
       if (pa !== pb) return pa - pb;
       return distance(a.center, mainBuilding.center) - distance(b.center, mainBuilding.center);
     });
-    parcelPoints = parcels[0].points;
-    geoSource = 'osm';
-    sourceNotes.push("Parcel boundary from OpenStreetMap");
-  } else {
+
+    const maxParcelArea = 10000; // sq meters (~2.5 acres)
+    const maxCentroidDistance = 100; // meters
+    const validParcels = parcels.filter(p => {
+      const area = polygonArea(p.points);
+      const dist = distance(p.center, mainBuilding.center);
+      return area < maxParcelArea && dist < maxCentroidDistance;
+    });
+
+    if (validParcels.length > 0) {
+      parcelPoints = validParcels[0].points;
+      geoSource = 'osm';
+      sourceNotes.push("Parcel boundary from OpenStreetMap");
+    }
+  }
+
+  if (!parcelPoints) {
     // Synthesize parcel from bounding box of main building + nearby neighbors
     const nearbyThreshold = 30; // meters
     const lotBuildings = [mainBuilding, ...neighborBuildings.filter(
