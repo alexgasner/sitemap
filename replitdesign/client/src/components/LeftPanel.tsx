@@ -1,8 +1,9 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Sun, Wind, Droplets, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { displayLabel, formatAcres, formatCoverage } from "@/lib/display";
+import { Sun, Wind, Droplets } from "lucide-react";
+import { displayLabel } from "@/lib/display";
+import ConfidenceBadge from "@/components/ConfidenceBadge";
 import type { Property, Insight } from "@shared/domain";
 import clsx from "clsx";
 
@@ -10,6 +11,28 @@ interface LeftPanelProps {
   property: Property;
   selectedZone: string | null;
   onSelectZone: (zoneId: string) => void;
+}
+
+function InsightCard({ insight }: { insight: Insight }) {
+  return (
+    <div className="bg-card border border-border/50 rounded-lg p-3 space-y-1.5">
+      <div className="flex items-start gap-2">
+        <div
+          className={clsx(
+            "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
+            insight.importance === "high" ? "bg-primary" : "bg-muted-foreground/30",
+          )}
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-foreground leading-tight">{insight.title}</p>
+          <p className="text-xs text-muted-foreground mt-1 line-clamp-2 leading-relaxed">{insight.body}</p>
+        </div>
+      </div>
+      <div className="pl-3.5">
+        <ConfidenceBadge confidence={insight.confidence} size="sm" />
+      </div>
+    </div>
+  );
 }
 
 export default function LeftPanel({ property, selectedZone, onSelectZone }: LeftPanelProps) {
@@ -52,14 +75,10 @@ export default function LeftPanel({ property, selectedZone, onSelectZone }: Left
           {constraints.length > 0 && (
             <>
               <section className="space-y-3">
-                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5" /> Key Constraints
-                </h2>
-                <div className="flex flex-wrap gap-2">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key Constraints</h2>
+                <div className="space-y-2">
                   {constraints.map(c => (
-                    <Badge key={c.id} variant="secondary" className="bg-destructive/10 text-destructive-foreground/80 hover:bg-destructive/15 border-transparent text-[10px] font-medium">
-                      {c.title}
-                    </Badge>
+                    <InsightCard key={c.id} insight={c} />
                   ))}
                 </div>
               </section>
@@ -71,14 +90,10 @@ export default function LeftPanel({ property, selectedZone, onSelectZone }: Left
           {opportunities.length > 0 && (
             <>
               <section className="space-y-3">
-                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Key Opportunities
-                </h2>
-                <div className="flex flex-wrap gap-2">
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Key Opportunities</h2>
+                <div className="space-y-2">
                   {opportunities.map(o => (
-                    <Badge key={o.id} variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/15 border-transparent text-[10px] font-medium">
-                      {o.title}
-                    </Badge>
+                    <InsightCard key={o.id} insight={o} />
                   ))}
                 </div>
               </section>
@@ -132,4 +147,13 @@ export default function LeftPanel({ property, selectedZone, onSelectZone }: Left
       </ScrollArea>
     </div>
   );
+}
+
+// Inline helpers (previously imported but kept local for simplicity)
+function formatAcres(sqFt: number): string {
+  return `~${(sqFt / 43560).toFixed(2)} acres`;
+}
+
+function formatCoverage(buildingSqFt: number, lotSqFt: number): string {
+  return `${Math.round((buildingSqFt / lotSqFt) * 100)}% building coverage`;
 }

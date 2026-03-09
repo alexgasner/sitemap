@@ -1,15 +1,23 @@
-import { X, Info, HelpCircle } from "lucide-react";
+import { X, HelpCircle, Leaf, Snowflake, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { displayLabel } from "@/lib/display";
-import type { Microzone } from "@shared/domain";
+import ConfidenceBadge from "@/components/ConfidenceBadge";
+import type { Microzone, Season } from "@shared/domain";
+
+const SEASON_ICONS: Record<Season, typeof Sun> = {
+  summer: Sun,
+  winter: Snowflake,
+  spring_fall: Leaf,
+};
 
 interface RightPanelProps {
   microzone: Microzone | null;
   onClose: () => void;
+  season: Season;
 }
 
-export default function RightPanel({ microzone, onClose }: RightPanelProps) {
+export default function RightPanel({ microzone, onClose, season }: RightPanelProps) {
   if (!microzone) return null;
 
   const conditions = [
@@ -20,6 +28,9 @@ export default function RightPanel({ microzone, onClose }: RightPanelProps) {
     { label: "Structure", value: displayLabel(microzone.supportClass) },
     { label: "Competition", value: displayLabel(microzone.competitionClass) },
   ];
+
+  const seasonalNote = microzone.seasonalNotes.find(n => n.season === season);
+  const SeasonIcon = SEASON_ICONS[season];
 
   return (
     <div className="absolute right-0 top-0 bottom-0 w-80 bg-card border-l border-border/60 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] z-20 flex flex-col animate-in slide-in-from-right-8 duration-300">
@@ -34,9 +45,7 @@ export default function RightPanel({ microzone, onClose }: RightPanelProps) {
         <div className="p-5 space-y-6">
           <div>
             <h3 className="text-xl font-display font-medium leading-tight mb-2">{microzone.name}</h3>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
-              <Info className="w-3 h-3" /> Confidence: {displayLabel(microzone.confidence)}
-            </div>
+            <ConfidenceBadge confidence={microzone.confidence} />
           </div>
 
           {/* Conditions */}
@@ -59,6 +68,33 @@ export default function RightPanel({ microzone, onClose }: RightPanelProps) {
               {microzone.rationale}
             </p>
           </div>
+
+          {/* Source Inputs */}
+          {microzone.sourceInputs.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Source Inputs</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {microzone.sourceInputs.map(input => (
+                  <span key={input} className="text-[10px] bg-muted/70 border border-border/40 px-1.5 py-0.5 rounded text-muted-foreground">
+                    {displayLabel(input)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Seasonal Note */}
+          {seasonalNote && (
+            <div className="space-y-2">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Seasonal Note</h4>
+              <div className="bg-muted/30 rounded-lg p-3 border border-border/40 flex gap-2.5">
+                <SeasonIcon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm leading-relaxed text-foreground/80">
+                  {seasonalNote.note}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Tags */}
           {microzone.tags.length > 0 && (

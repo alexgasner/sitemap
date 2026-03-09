@@ -3,25 +3,31 @@ import Header from "@/components/Header";
 import LeftPanel from "@/components/LeftPanel";
 import MapCanvas from "@/components/MapCanvas";
 import RightPanel from "@/components/RightPanel";
-import { useDemoProperty } from "@/hooks/useProperty";
+import AnalysisProgress from "@/components/AnalysisProgress";
+import { useDemoProperty, useAnalyzeProperty } from "@/hooks/useProperty";
 import type { ViewMode, Season } from "@shared/domain";
 
 export default function Home() {
   const [demoRequested, setDemoRequested] = useState(false);
-  const { data: property, isLoading, error } = useDemoProperty(demoRequested);
+  const { data: demoData, isLoading: isDemoLoading, error: demoError } = useDemoProperty(demoRequested);
+  const analyzeMutation = useAnalyzeProperty();
 
   // App state
   const [viewMode, setViewMode] = useState<ViewMode>("base");
   const [season, setSeason] = useState<Season>("spring_fall");
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
+  // Unified property: prefer analyze result over demo
+  const property = analyzeMutation.data ?? demoData ?? undefined;
+  const isLoading = isDemoLoading || analyzeMutation.isPending;
+  const error = analyzeMutation.error ?? demoError ?? undefined;
   const hasSearched = !!property;
 
-  const handleSearch = (_address: string) => {
-    // For now, any search triggers the demo property
+  const handleSearch = (address: string) => {
     setSelectedZone(null);
     setViewMode("base");
-    setDemoRequested(true);
+    setDemoRequested(false);
+    analyzeMutation.mutate(address);
   };
 
   const handleDemo = () => {
@@ -65,6 +71,7 @@ export default function Home() {
             <RightPanel
               microzone={selectedMicrozone}
               onClose={() => setSelectedZone(null)}
+              season={season}
             />
           </>
         ) : (
@@ -80,6 +87,11 @@ export default function Home() {
             error={error?.message}
           />
         )}
+
+        <AnalysisProgress
+          isActive={isLoading}
+          hasError={!!error}
+        />
       </main>
     </div>
   );

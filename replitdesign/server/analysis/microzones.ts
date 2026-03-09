@@ -7,6 +7,7 @@ import type {
   HeatClass,
   SupportClass,
   CompetitionClass,
+  SeasonalNote,
   Polygon,
   Point,
 } from "../../shared/domain";
@@ -62,6 +63,11 @@ export function deriveMicrozones(
       "The south-facing wall creates a warm, sheltered microclimate. Reflected heat and full sun make this the warmest zone. Roof overhang keeps soil drier.",
     tags: ["warm", "sheltered", "wall-support", "dry-tendency"],
     sourceInputs: ["building_footprint", "compass_orientation", "solar_exposure", "heat_exposure"],
+    seasonalNotes: [
+      { season: "summer", note: "Peak warmth; reflected heat can stress shallow-rooted plants." },
+      { season: "winter", note: "Wall retains residual heat, extending the growing season slightly." },
+      { season: "spring_fall", note: "Ideal for early starts; soil warms faster than open areas." },
+    ],
   }));
 
   // Zone B: Exposed open area — SE of building
@@ -86,6 +92,11 @@ export function deriveMicrozones(
       "Open yard with no wind shelter from structures. Exposed to prevailing winds. Good planting area for wind-tolerant species.",
     tags: ["exposed", "sunny", "wind-stressed", "open"],
     sourceInputs: ["parcel_edges", "wind_exposure", "solar_exposure"],
+    seasonalNotes: [
+      { season: "summer", note: "Full exposure intensifies; drought stress likely without irrigation." },
+      { season: "winter", note: "Wind chill factor highest here; protect tender perennials." },
+      { season: "spring_fall", note: "Drying winds accelerate soil moisture loss after rain." },
+    ],
   }));
 
   // Zone C: North Shade — strip north of building
@@ -104,6 +115,11 @@ export function deriveMicrozones(
       "The north side is shaded most of the day. Cool, moist conditions persist. Foundation edge offers structural support.",
     tags: ["shady", "cool", "moist", "foundation"],
     sourceInputs: ["building_footprint", "shade_layer", "moisture_tendency"],
+    seasonalNotes: [
+      { season: "summer", note: "Coolest zone on the property; refuge for shade-loving plants." },
+      { season: "winter", note: "Near-total shade; frost lingers longest here." },
+      { season: "spring_fall", note: "Slow to warm in spring; stays cool into early summer." },
+    ],
   }));
 
   // Zone D: Wet Rear Corner — far rear of parcel
@@ -121,6 +137,11 @@ export function deriveMicrozones(
       "Runoff collects at this low point. Drainage is slow, keeping soil wet. Only moisture-tolerant plants thrive here.",
     tags: ["wet", "drainage-issue", "low-point", "moist-loving"],
     sourceInputs: ["parcel_geometry", "moisture_tendency", "drainage_tendency"],
+    seasonalNotes: [
+      { season: "summer", note: "May dry out in prolonged heat; otherwise stays damp." },
+      { season: "winter", note: "Standing water likely after storms; potential ice hazard." },
+      { season: "spring_fall", note: "Peak wetness from seasonal rains; ideal for bog-tolerant species." },
+    ],
   }));
 
   // Zone E: Open Sunny Planting Bed — central south yard
@@ -147,6 +168,11 @@ export function deriveMicrozones(
       "The largest open area with the best conditions: full sun, balanced moisture, and moderate wind. The most versatile planting zone.",
     tags: ["sunny", "balanced", "versatile", "prime-planting"],
     sourceInputs: ["solar_exposure", "moisture_tendency", "wind_exposure"],
+    seasonalNotes: [
+      { season: "summer", note: "Peak productivity; most plant varieties thrive with regular water." },
+      { season: "winter", note: "Dormant period; good for cover crops or mulching." },
+      { season: "spring_fall", note: "Best planting windows; moderate conditions support establishment." },
+    ],
   }));
 
   // Zone F: Tree canopy competition (if canopy features exist)
@@ -167,6 +193,11 @@ export function deriveMicrozones(
         "Beneath the mature tree canopy. Root competition makes new planting difficult. Filtered light provides bright shade. Tree intercepts rainfall.",
       tags: ["shady", "competitive", "canopy-edge", "dry-under-canopy"],
       sourceInputs: ["canopy_outline", "shade_layer", "root_competition"],
+      seasonalNotes: [
+        { season: "summer", note: "Dense leaf cover blocks most rain; driest and shadiest period." },
+        { season: "winter", note: "Deciduous canopy opens up; more light and rain reach the ground." },
+        { season: "spring_fall", note: "Transitional canopy cover; brief windows of better light." },
+      ],
     }));
   }
 
@@ -199,6 +230,7 @@ interface ZoneInput {
   rationale: string;
   tags: string[];
   sourceInputs: string[];
+  seasonalNotes: SeasonalNote[];
 }
 
 function makeZone(z: ZoneInput): Microzone {
@@ -214,11 +246,7 @@ function makeZone(z: ZoneInput): Microzone {
     competitionClass: z.competition,
     confidence: "modeled",
     rationale: z.rationale,
-    seasonalNotes: [
-      { season: "summer", note: "Peak growing conditions for this zone profile." },
-      { season: "winter", note: "Reduced light and cooler temperatures affect this zone." },
-      { season: "spring_fall", note: "Moderate conditions; good transition season." },
-    ],
+    seasonalNotes: z.seasonalNotes,
     sourceInputs: z.sourceInputs,
     tags: z.tags,
   };

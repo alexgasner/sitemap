@@ -2,6 +2,7 @@ import type { Express } from "express";
 import type { Server } from "http";
 import { analyzeProperty } from "./analysis/pipeline";
 import type { AnalysisInput } from "./analysis/types";
+import { geocodeAddress } from "./services/geocoding";
 
 /**
  * Demo property seed: just the geometry and metadata needed as pipeline input.
@@ -93,24 +94,29 @@ export async function registerRoutes(
   });
 
   // POST /api/properties/analyze — analyze a custom property
-  // For now, accepts an address and returns the demo analysis
-  // (geocoding + real geometry comes in Session 6/9)
-  app.post("/api/properties/analyze", (req, res) => {
+  app.post("/api/properties/analyze", async (req, res) => {
     const { address } = req.body as { address?: string };
     if (!address || typeof address !== "string" || address.trim().length === 0) {
       res.status(400).json({ error: "Address is required" });
       return;
     }
 
-    // For now, use demo geometry with the provided address
-    const input: AnalysisInput = {
-      ...demoInput,
-      address: address.trim(),
-      resolvedAddress: address.trim(),
-    };
+    try {
+      const geo = await geocodeAddress(address.trim());
 
-    const result = analyzeProperty(input);
-    res.json(result);
+      const input: AnalysisInput = {
+        ...demoInput,
+        address: address.trim(),
+        resolvedAddress: geo.resolvedAddress,
+        centroid: { lat: geo.lat, lon: geo.lon },
+      };
+
+      const result = analyzeProperty(input);
+      res.json(result);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Geocoding failed";
+      res.status(422).json({ error: message });
+    }
   });
 
   return httpServer;

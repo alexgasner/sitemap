@@ -11,13 +11,16 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 
 function PasswordGate({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => localStorage.getItem("sl_auth") === "1",
+  );
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === "1234") {
+      localStorage.setItem("sl_auth", "1");
       setIsAuthenticated(true);
       setError(false);
     } else {
