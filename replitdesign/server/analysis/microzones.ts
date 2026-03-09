@@ -11,6 +11,7 @@ import type {
   Polygon,
   Point,
 } from "../../shared/domain";
+import { computeScale } from "./scale";
 
 /**
  * Derive microzones from the property geometry and layer results.
@@ -32,6 +33,7 @@ export function deriveMicrozones(
   layers: LayerResult[],
 ): Microzone[] {
   const { buildingGeometry, parcelGeometry } = input;
+  const scale = computeScale(input);
   const bPts = buildingGeometry.points;
   const pPts = parcelGeometry.points;
 
@@ -48,11 +50,10 @@ export function deriveMicrozones(
   const zones: Microzone[] = [];
 
   // Zone A: South Wall Warm Pocket — strip directly south of building
-  const southStripDepth = 150;
   zones.push(makeZone({
     id: "zone-a",
     name: "South Wall Warm Pocket",
-    geometry: rect(bMinX, bMaxY, bMaxX, bMaxY + southStripDepth),
+    geometry: rect(bMinX, bMaxY, bMaxX, bMaxY + scale.offset),
     light: "full_sun",
     moisture: "moderately_dry",
     wind: "sheltered",
@@ -79,7 +80,7 @@ export function deriveMicrozones(
         { x: bMaxX, y: bMaxY },
         { x: pMaxX, y: bMaxY },
         { x: pMaxX, y: bMaxY + (pMaxY - bMaxY) * 0.6 },
-        { x: bMaxX, y: bMaxY + southStripDepth },
+        { x: bMaxX, y: bMaxY + scale.offset },
       ],
     },
     light: "full_sun",
@@ -126,7 +127,7 @@ export function deriveMicrozones(
   zones.push(makeZone({
     id: "zone-d",
     name: "Wet Rear Corner",
-    geometry: rect(pMaxX - 200, pMaxY - 200, pMaxX, pMaxY),
+    geometry: rect(pMaxX - scale.largeOffset, pMaxY - scale.largeOffset, pMaxX, pMaxY),
     light: "part_sun",
     moisture: "wet",
     wind: "moderate",
@@ -150,12 +151,12 @@ export function deriveMicrozones(
     name: "Open Sunny Planting Bed",
     geometry: {
       points: [
-        { x: bMinX + 100, y: bMaxY + southStripDepth },
-        { x: bMaxX, y: bMaxY + southStripDepth },
-        { x: pMaxX - 200, y: pMaxY - 200 },
-        { x: pMaxX - 200, y: pMaxY },
+        { x: bMinX + scale.halfOffset, y: bMaxY + scale.offset },
+        { x: bMaxX, y: bMaxY + scale.offset },
+        { x: pMaxX - scale.largeOffset, y: pMaxY - scale.largeOffset },
+        { x: pMaxX - scale.largeOffset, y: pMaxY },
         { x: bMinX, y: pMaxY },
-        { x: bMinX, y: bMaxY + southStripDepth },
+        { x: bMinX, y: bMaxY + scale.offset },
       ],
     },
     light: "full_sun",

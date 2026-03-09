@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 const STAGES = [
   "Resolving property...",
@@ -14,9 +15,10 @@ const STAGE_DURATION_MS = 800;
 interface AnalysisProgressProps {
   isActive: boolean;
   hasError: boolean;
+  onRetry?: () => void;
 }
 
-export default function AnalysisProgress({ isActive, hasError }: AnalysisProgressProps) {
+export default function AnalysisProgress({ isActive, hasError, onRetry }: AnalysisProgressProps) {
   const [stageIndex, setStageIndex] = useState(0);
   const [animationDone, setAnimationDone] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -58,6 +60,14 @@ export default function AnalysisProgress({ isActive, hasError }: AnalysisProgres
     }
   }, [animationDone, isActive]);
 
+  // Auto-dismiss error overlay after 3 seconds
+  useEffect(() => {
+    if (hasError && visible) {
+      const timer = setTimeout(() => setVisible(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasError, visible]);
+
   if (!visible) return null;
 
   const progress = ((stageIndex + 1) / STAGES.length) * 100;
@@ -66,7 +76,14 @@ export default function AnalysisProgress({ isActive, hasError }: AnalysisProgres
     <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/60 backdrop-blur-sm">
       <div className="bg-card border border-border/50 shadow-2xl rounded-2xl px-10 py-8 max-w-sm w-full text-center">
         {hasError ? (
-          <p className="text-sm text-destructive font-medium">Analysis failed. Please try again.</p>
+          <div className="space-y-3">
+            <p className="text-sm text-destructive font-medium">Analysis failed. Please try again.</p>
+            {onRetry && (
+              <Button variant="outline" size="sm" onClick={onRetry}>
+                Try Again
+              </Button>
+            )}
+          </div>
         ) : (
           <>
             <div className="h-8 flex items-center justify-center overflow-hidden">

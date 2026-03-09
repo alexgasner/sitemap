@@ -19,6 +19,8 @@ export interface AnalysisInput {
   buildingAreaSqFt: number;
   /** Compass orientation: degrees from north for the front of the property */
   frontFacingDegrees: number;
+  /** How geometry was obtained — affects confidence propagation */
+  geometrySource?: 'osm' | 'osm_partial' | 'demo_fallback';
 }
 
 /** Intermediate result from a single analysis module */

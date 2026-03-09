@@ -646,15 +646,19 @@ The phases above are implemented across 10 discrete sessions. Each session ends 
 
 ### Session list
 1. **Foundation** — Domain types + first API endpoint + deployment fix ✅
-2. **Frontend API wiring** — React Query, replace inline mock data
-3. **Data-driven map** — SVG rendering from API geometry
-4. **Layer overlays** — Visual SVG overlays for each layer mode
-5. **Analysis pipeline** — Server-side composable analysis
-6. **Geocoding** — Real address search via Google Maps API
-7. **Loading animation** — Premium staged analysis progress
-8. **Insights + confidence** — Enrich UI with generated insights, confidence badges
-9. **Real geometry** — Parcel + building data from OSM/Microsoft
-10. **Polish + QA** — Edge cases, responsive, full walkthrough
+2. **Frontend API wiring** — React Query, replace inline mock data ✅
+3. **Data-driven map** — SVG rendering from API geometry ✅
+4. **Layer overlays** — Visual SVG overlays for each layer mode ✅
+5. **Analysis pipeline** — Server-side composable analysis ✅
+6. **Geocoding** — Real address search via Google Maps API ✅
+7. **Loading animation** — Premium staged analysis progress ✅
+8. **Insights + confidence** — Enrich UI with generated insights, confidence badges ✅
+9. **UI polish: Zoom/Pan** — Map zoom, pan, scroll interactions ✅
+10. **UI polish: Mobile** — Responsive mobile layout, bottom sheet ✅
+11. **UI polish: Export** — Export dialog, PDF/image output ✅
+12. **Real geometry from OSM** — Parcel + building data from OpenStreetMap, scale-aware analysis ✅
+13. **Geometry enrichment + calibration** — Improve parcel synthesis, add Microsoft Building Footprints fallback
+14. **Edge cases + final QA** — Error handling, responsive fixes, full walkthrough
 
 ### Dependency graph
 ```

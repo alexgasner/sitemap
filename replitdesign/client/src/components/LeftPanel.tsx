@@ -40,7 +40,7 @@ export default function LeftPanel({ property, selectedZone, onSelectZone }: Left
   const opportunities = property.insights.filter(i => i.type === "opportunity");
 
   return (
-    <div className="w-80 h-full border-r border-border/60 bg-card flex flex-col z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
+    <div className="w-80 h-full border-r border-border/60 bg-card flex flex-col z-10 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] print:block print:w-full print:shadow-none print:border-none">
       <ScrollArea className="flex-1">
         <div className="p-5 space-y-6">
 

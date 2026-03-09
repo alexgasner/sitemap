@@ -3,6 +3,7 @@ import type {
   Property,
   SiteFeature,
   EnvironmentalLayer,
+  ConfidenceLevel,
 } from "../../shared/domain";
 import { analyzeSolar } from "./solar";
 import { analyzeWind } from "./wind";
@@ -35,6 +36,7 @@ export function analyzeProperty(input: AnalysisInput): Property {
   ];
 
   // 3. Convert to domain EnvironmentalLayer objects
+  const layerConfidence = layerConfidenceFor(input.geometrySource);
   const environmentalLayers: EnvironmentalLayer[] = allLayerResults.map(
     (lr, i) => ({
       id: `layer-${lr.type}-${lr.season}-${i}`,
@@ -43,7 +45,7 @@ export function analyzeProperty(input: AnalysisInput): Property {
       zones: lr.zones,
       sourceInputs: lr.sourceInputs,
       methodology: lr.methodology,
-      confidence: "modeled" as const,
+      confidence: layerConfidence,
     }),
   );
 
@@ -58,6 +60,9 @@ export function analyzeProperty(input: AnalysisInput): Property {
     (input.additionalFeatures?.imperviousSurfaces ?? []).length > 0
       ? input.lotAreaSqFt * 0.12 // rough estimate
       : 0;
+
+  // 7. Build data source notes
+  const dataSourceNotes = buildDataSourceNotes(input.geometrySource);
 
   return {
     id: `prop-${Date.now()}`,
@@ -77,24 +82,63 @@ export function analyzeProperty(input: AnalysisInput): Property {
     },
     analysisMetadata: {
       analyzedAt: new Date().toISOString(),
-      pipelineVersion: "0.2.0-heuristic",
-      dataSourceNotes: [
-        "Geometry is modeled from input data",
-        "Environmental layers computed via heuristic analysis",
-        "Microzones derived from spatial partitioning + layer overlap",
-      ],
+      pipelineVersion: "0.3.0-osm",
+      dataSourceNotes,
     },
   };
 }
 
+function layerConfidenceFor(source?: string): ConfidenceLevel {
+  switch (source) {
+    case 'osm': return "detected";
+    case 'osm_partial': return "inferred";
+    default: return "modeled";
+  }
+}
+
+function featureConfidenceFor(source?: string, isParcel = false): ConfidenceLevel {
+  switch (source) {
+    case 'osm': return "detected";
+    case 'osm_partial': return isParcel ? "inferred" : "detected";
+    default: return "modeled";
+  }
+}
+
+function buildDataSourceNotes(source?: string): string[] {
+  switch (source) {
+    case 'osm':
+      return [
+        "Building and parcel geometry from OpenStreetMap",
+        "Environmental layers computed via heuristic analysis",
+        "Microzones derived from spatial partitioning + layer overlap",
+      ];
+    case 'osm_partial':
+      return [
+        "Building footprint from OpenStreetMap",
+        "Parcel boundary synthesized from building extent (not in OSM)",
+        "Environmental layers computed via heuristic analysis",
+        "Microzones derived from spatial partitioning + layer overlap",
+      ];
+    default:
+      return [
+        "Geometry is modeled from demo data",
+        "Environmental layers computed via heuristic analysis",
+        "Microzones derived from spatial partitioning + layer overlap",
+      ];
+  }
+}
+
 function buildSiteFeatures(input: AnalysisInput): SiteFeature[] {
+  const buildingConfidence = featureConfidenceFor(input.geometrySource, false);
+  const parcelConfidence = featureConfidenceFor(input.geometrySource, true);
+
   const features: SiteFeature[] = [
     {
       id: "feat-building",
       type: "building",
       geometry: input.buildingGeometry,
       source: "input",
-      confidence: "modeled",
+      confidence: buildingConfidence,
       attributes: { stories: 2, material: "wood_frame" },
     },
   ];
@@ -107,7 +151,7 @@ function buildSiteFeatures(input: AnalysisInput): SiteFeature[] {
         type: "neighboring_building",
         geometry: geo,
         source: "input",
-        confidence: "modeled",
+        confidence: buildingConfidence,
         attributes: { stories: 2 },
       });
     });
@@ -119,7 +163,7 @@ function buildSiteFeatures(input: AnalysisInput): SiteFeature[] {
         type: "impervious_surface",
         geometry: geo,
         source: "input",
-        confidence: "modeled",
+        confidence: parcelConfidence,
         attributes: { material: "concrete" },
       });
     });
@@ -131,7 +175,7 @@ function buildSiteFeatures(input: AnalysisInput): SiteFeature[] {
         type: "canopy",
         geometry: c.geometry,
         source: "input",
-        confidence: "modeled",
+        confidence: input.geometrySource === 'osm' || input.geometrySource === 'osm_partial' ? "detected" : "modeled",
         attributes: { species: c.species ?? "deciduous", canopyDiameterFt: 30 },
       });
     });

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Microzone, ViewMode } from "@shared/domain";
 import { polygonToPath, polygonCentroid } from "@/lib/map/renderer";
 import { getZoneFill, getZoneStroke, getZoneStrokeWidth, getZoneColor } from "@/lib/map/colors";
@@ -15,26 +16,30 @@ export default function MicrozoneLayer({
   selectedZone,
   onSelectZone,
 }: MicrozoneLayerProps) {
+  const [hoveredZone, setHoveredZone] = useState<string | null>(null);
   const showLabels = viewMode === "microzones";
 
   return (
     <g>
       {microzones.map((zone, index) => {
         const isSelected = selectedZone === zone.id;
+        const isHovered = hoveredZone === zone.id && !isSelected;
         const centroid = polygonCentroid(zone.geometry);
         const color = getZoneColor(index);
-        const showLabel = showLabels || isSelected;
+        const showLabel = showLabels || isSelected || isHovered;
 
         return (
           <g key={zone.id}>
             <path
               d={polygonToPath(zone.geometry)}
-              fill={getZoneFill(index, isSelected, viewMode)}
-              stroke={getZoneStroke(index, isSelected, viewMode)}
-              strokeWidth={getZoneStrokeWidth(isSelected, viewMode)}
+              fill={getZoneFill(index, isSelected, viewMode, isHovered)}
+              stroke={getZoneStroke(index, isSelected, viewMode, isHovered)}
+              strokeWidth={getZoneStrokeWidth(isSelected, viewMode, isHovered)}
               className="cursor-pointer transition-all duration-200"
               style={{ pointerEvents: "all" }}
               onClick={() => onSelectZone(zone.id)}
+              onMouseEnter={() => setHoveredZone(zone.id)}
+              onMouseLeave={() => setHoveredZone(null)}
             />
             {/* Invisible wider hit area for easier clicking */}
             <path
@@ -45,6 +50,8 @@ export default function MicrozoneLayer({
               className="cursor-pointer"
               style={{ pointerEvents: "stroke" }}
               onClick={() => onSelectZone(zone.id)}
+              onMouseEnter={() => setHoveredZone(zone.id)}
+              onMouseLeave={() => setHoveredZone(null)}
             />
             {showLabel && (
               <foreignObject

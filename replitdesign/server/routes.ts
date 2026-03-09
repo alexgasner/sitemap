@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { analyzeProperty } from "./analysis/pipeline";
 import type { AnalysisInput } from "./analysis/types";
 import { geocodeAddress } from "./services/geocoding";
+import { fetchPropertyGeometry } from "./services/geometry";
 
 /**
  * Demo property seed: just the geometry and metadata needed as pipeline input.
@@ -81,6 +82,7 @@ const demoInput: AnalysisInput = {
   lotAreaSqFt: 7500,
   buildingAreaSqFt: 1800,
   frontFacingDegrees: 180, // south-facing
+  geometrySource: 'demo_fallback',
 };
 
 export async function registerRoutes(
@@ -104,12 +106,41 @@ export async function registerRoutes(
     try {
       const geo = await geocodeAddress(address.trim());
 
-      const input: AnalysisInput = {
-        ...demoInput,
-        address: address.trim(),
-        resolvedAddress: geo.resolvedAddress,
-        centroid: { lat: geo.lat, lon: geo.lon },
-      };
+      let input: AnalysisInput;
+
+      if (geo.lat !== 0 && geo.lon !== 0) {
+        const geometry = await fetchPropertyGeometry(geo.lat, geo.lon);
+        if (geometry) {
+          input = {
+            address: address.trim(),
+            resolvedAddress: geo.resolvedAddress,
+            centroid: { lat: geo.lat, lon: geo.lon },
+            parcelGeometry: geometry.parcelGeometry,
+            buildingGeometry: geometry.buildingGeometry,
+            additionalFeatures: geometry.additionalFeatures,
+            lotAreaSqFt: geometry.lotAreaSqFt,
+            buildingAreaSqFt: geometry.buildingAreaSqFt,
+            frontFacingDegrees: 180,
+            geometrySource: geometry.geometrySource,
+          };
+        } else {
+          // No OSM data — fall back to demo geometry
+          input = {
+            ...demoInput,
+            address: address.trim(),
+            resolvedAddress: geo.resolvedAddress,
+            centroid: { lat: geo.lat, lon: geo.lon },
+            geometrySource: 'demo_fallback',
+          };
+        }
+      } else {
+        // No geocoding available — use demo geometry
+        input = {
+          ...demoInput,
+          address: address.trim(),
+          geometrySource: 'demo_fallback',
+        };
+      }
 
       const result = analyzeProperty(input);
       res.json(result);

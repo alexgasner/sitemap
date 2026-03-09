@@ -1,5 +1,6 @@
 import type { AnalysisInput, LayerResult } from "./types";
 import type { Season } from "../../shared/domain";
+import { computeScale } from "./scale";
 
 /**
  * Compute heat exposure layers.
@@ -9,6 +10,7 @@ import type { Season } from "../../shared/domain";
  */
 export function analyzeHeat(input: AnalysisInput): LayerResult[] {
   const { buildingGeometry } = input;
+  const scale = computeScale(input);
   const bPts = buildingGeometry.points;
 
   const bMinX = Math.min(...bPts.map((p) => p.x));
@@ -31,8 +33,8 @@ export function analyzeHeat(input: AnalysisInput): LayerResult[] {
           points: [
             { x: bMinX, y: bMaxY },
             { x: bMaxX, y: bMaxY },
-            { x: bMaxX, y: bMaxY + 150 },
-            { x: bMinX, y: bMaxY + 150 },
+            { x: bMaxX, y: bMaxY + scale.offset },
+            { x: bMinX, y: bMaxY + scale.offset },
           ],
         },
         intensity: Math.min(0.85 * heatMult, 1),

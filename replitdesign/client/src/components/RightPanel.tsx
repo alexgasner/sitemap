@@ -33,7 +33,7 @@ export default function RightPanel({ microzone, onClose, season }: RightPanelPro
   const SeasonIcon = SEASON_ICONS[season];
 
   return (
-    <div className="absolute right-0 top-0 bottom-0 w-80 bg-card border-l border-border/60 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] z-20 flex flex-col animate-in slide-in-from-right-8 duration-300">
+    <div className="absolute right-0 top-0 bottom-0 w-80 bg-card border-l border-border/60 shadow-[-4px_0_24px_-12px_rgba(0,0,0,0.1)] z-20 flex flex-col animate-in slide-in-from-right-8 duration-300 print:hidden">
       <div className="flex items-center justify-between p-4 border-b border-border/50">
         <h2 className="font-display font-medium text-base text-foreground">Zone Detail</h2>
         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground" onClick={onClose}>

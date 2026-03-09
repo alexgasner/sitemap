@@ -1,5 +1,6 @@
 import type { AnalysisInput, LayerResult } from "./types";
 import type { Season } from "../../shared/domain";
+import { computeScale } from "./scale";
 
 /**
  * Compute moisture tendency layers.
@@ -9,6 +10,7 @@ import type { Season } from "../../shared/domain";
  */
 export function analyzeMoisture(input: AnalysisInput): LayerResult[] {
   const { buildingGeometry, parcelGeometry } = input;
+  const scale = computeScale(input);
   const bPts = buildingGeometry.points;
   const pPts = parcelGeometry.points;
 
@@ -33,10 +35,10 @@ export function analyzeMoisture(input: AnalysisInput): LayerResult[] {
       {
         geometry: {
           points: [
-            { x: pMaxX - 200, y: pMaxY - 200 },
-            { x: pMaxX, y: pMaxY - 200 },
+            { x: pMaxX - scale.largeOffset, y: pMaxY - scale.largeOffset },
+            { x: pMaxX, y: pMaxY - scale.largeOffset },
             { x: pMaxX, y: pMaxY },
-            { x: pMaxX - 200, y: pMaxY },
+            { x: pMaxX - scale.largeOffset, y: pMaxY },
           ],
         },
         intensity: wetMult,
@@ -47,9 +49,9 @@ export function analyzeMoisture(input: AnalysisInput): LayerResult[] {
         geometry: {
           points: [
             { x: bMinX, y: bMaxY },
-            { x: bMinX + 100, y: bMaxY },
-            { x: bMinX + 100, y: bMaxY + 150 },
-            { x: bMinX, y: bMaxY + 150 },
+            { x: bMinX + scale.halfOffset, y: bMaxY },
+            { x: bMinX + scale.halfOffset, y: bMaxY + scale.offset },
+            { x: bMinX, y: bMaxY + scale.offset },
           ],
         },
         intensity: season === "winter" ? 0.15 : 0.2,

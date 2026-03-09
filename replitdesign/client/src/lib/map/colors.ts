@@ -1,4 +1,4 @@
-import type { Microzone, ViewMode } from "@shared/domain";
+import type { ViewMode } from "@shared/domain";
 
 /**
  * Fixed palette of zone colors — visually distinct, premium aesthetic.
@@ -19,24 +19,32 @@ export function getZoneColor(index: number) {
   return ZONE_PALETTE[index % ZONE_PALETTE.length];
 }
 
-/** Selected zone gets a stronger fill */
-export function getZoneFill(index: number, isSelected: boolean, viewMode: ViewMode): string {
+/** Selected zone gets a stronger fill; hovered zone gets intermediate fill */
+export function getZoneFill(index: number, isSelected: boolean, viewMode: ViewMode, isHovered = false): string {
   const color = ZONE_PALETTE[index % ZONE_PALETTE.length];
   if (isSelected) return color.fill.replace("0.12", "0.25");
+  if (isHovered) return color.fill.replace("0.12", "0.18");
   if (viewMode === "microzones") return color.fill;
+  // Ghost outlines in composite mode
+  if (viewMode === "composite") return color.fill.replace("0.12", "0.06");
   return "transparent";
 }
 
-export function getZoneStroke(index: number, isSelected: boolean, viewMode: ViewMode): string {
+export function getZoneStroke(index: number, isSelected: boolean, viewMode: ViewMode, isHovered = false): string {
   const color = ZONE_PALETTE[index % ZONE_PALETTE.length];
   if (isSelected) return color.stroke;
+  if (isHovered) return color.stroke + "80"; // ~50% opacity
   if (viewMode === "microzones") return color.stroke + "4d"; // ~30% opacity hex
+  // Ghost outlines in composite mode
+  if (viewMode === "composite") return color.stroke + "33"; // ~20% opacity
   return "transparent";
 }
 
-export function getZoneStrokeWidth(isSelected: boolean, viewMode: ViewMode): number {
+export function getZoneStrokeWidth(isSelected: boolean, viewMode: ViewMode, isHovered = false): number {
   if (isSelected) return 3;
+  if (isHovered) return 2;
   if (viewMode === "microzones") return 2;
+  if (viewMode === "composite") return 1;
   return 0;
 }
 
@@ -78,3 +86,12 @@ export function getLayerTypesForViewMode(viewMode: ViewMode): string[] {
     default: return [];
   }
 }
+
+/** Map legend label to ViewMode for interactive legend clicks */
+export const LEGEND_LABEL_TO_VIEW_MODE: Record<string, ViewMode> = {
+  "Sun": "sun",
+  "Shade": "sun",
+  "Wind": "wind",
+  "Moisture": "water",
+  "Heat": "heat",
+};

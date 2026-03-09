@@ -1,5 +1,6 @@
 import type { AnalysisInput, LayerResult } from "./types";
 import type { Season } from "../../shared/domain";
+import { computeScale } from "./scale";
 
 /**
  * Compute solar exposure and shade layers.
@@ -10,6 +11,7 @@ import type { Season } from "../../shared/domain";
  */
 export function analyzeSolar(input: AnalysisInput): LayerResult[] {
   const { buildingGeometry, parcelGeometry } = input;
+  const scale = computeScale(input);
   const bPts = buildingGeometry.points;
   const pPts = parcelGeometry.points;
 
@@ -67,8 +69,8 @@ export function analyzeSolar(input: AnalysisInput): LayerResult[] {
         {
           geometry: {
             points: [
-              { x: bMinX - 20, y: Math.max(bMinY - shadowDepth, pMinY) },
-              { x: bMaxX + 20, y: Math.max(bMinY - shadowDepth, pMinY) },
+              { x: bMinX - scale.smallOffset, y: Math.max(bMinY - shadowDepth, pMinY) },
+              { x: bMaxX + scale.smallOffset, y: Math.max(bMinY - shadowDepth, pMinY) },
               { x: bMaxX, y: bMinY },
               { x: bMinX, y: bMinY },
             ],
